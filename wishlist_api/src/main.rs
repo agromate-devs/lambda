@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-
 use aws_sdk_dynamodb::{operation::scan::ScanOutput, types::AttributeValue, Client};
-use lambda_http::{http::Method, run, service_fn, Body, Error, Request, Response};
+use lambda_http::{http::Method, run, service_fn, Body, Error, Request, RequestExt , Response};
+use response::{success_response, internal_server_error};
+mod response;
 
 const TABLE_NAME: &str = "wishlist"; // DynamoDB table name
 
@@ -25,13 +26,13 @@ struct List {
     uuid: String,
 }
 
-async fn get_list(client: &Client, details: WishListRequest) -> ScanOutput {
+async fn get_list(client: &Client, uid: &str) -> ScanOutput {
     let plants_in_list_raw = client
         .scan()
         .table_name(TABLE_NAME)
         .filter_expression("#uid = :id")
         .expression_attribute_names("#uid", "user_id")
-        .expression_attribute_values(":id", AttributeValue::S(details.uid))
+        .expression_attribute_values(":id", AttributeValue::S(uid.to_string()))
         .send()
         .await
         .unwrap();
@@ -64,16 +65,16 @@ async fn add_plant(client: &Client, details: WishListRequest) -> bool {
     }
 }
 
-async fn delete_list(client: &Client, details: WishListRequest) -> bool {
+async fn delete_list(client: &Client, uid: &str, list_id: &str) -> bool {
     // TODO: Rewrite with bulk delete
-    let lists = get_list(&client, details.clone()).await;
+    let lists = get_list(&client, uid).await;
     let selected_list: Vec<HashMap<String, AttributeValue>> = lists
         .items()
         .unwrap()
         .to_vec()
         .into_iter()
         .filter(|x| {
-            x.get("list_id").unwrap().to_owned() == AttributeValue::N(details.list_id.to_string())
+            x.get("list_id").unwrap().to_owned() == AttributeValue::N(list_id.to_string())
         })
         .collect();
     for plant in selected_list {
@@ -81,7 +82,7 @@ async fn delete_list(client: &Client, details: WishListRequest) -> bool {
             .delete_item()
             .table_name(TABLE_NAME)
             .key("uuid", plant.get("uuid").unwrap().clone())
-            .key("user_id", AttributeValue::S(details.uid.to_string()))
+            .key("user_id", AttributeValue::S(uid.to_string()))
             .send()
             .await
             .unwrap();
@@ -89,12 +90,12 @@ async fn delete_list(client: &Client, details: WishListRequest) -> bool {
     true
 }
 
-async fn delete_plant(client: &Client, details: WishListRequest) -> bool {
+async fn delete_plant(client: &Client, plant_uuid: &str, uid: &str) -> bool {
     let request = client
         .delete_item()
         .table_name(TABLE_NAME)
-        .key("uuid", AttributeValue::S(details.plant.uuid))
-        .key("user_id", AttributeValue::S(details.uid))
+        .key("uuid", AttributeValue::S(plant_uuid.to_string()))
+        .key("user_id", AttributeValue::S(uid.to_string()))
         .send()
         .await;
 
@@ -123,60 +124,82 @@ fn hashmap_to_lists(plants: Vec<HashMap<String, AttributeValue>>) -> Vec<Plant> 
 /// There are some code example in the following URLs:
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
 async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    let body = event.body();
-    let body_string = std::str::from_utf8(body).expect("invalid utf-8 sequence");
-
-    let body_parsed = serde_json::from_str::<WishListRequest>(body_string).unwrap();
-
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
 
-    let mut result = false;
-
     match event.method() {
         &Method::POST => {
-            result = add_plant(&client, body_parsed.clone()).await;
+            let body = event.body();
+            let body_string = std::str::from_utf8(body).expect("invalid utf-8 sequence");
+        
+            let body_parsed = serde_json::from_str::<WishListRequest>(body_string).unwrap();
+        
+            if add_plant(&client, body_parsed.clone()).await {
+                Ok(success_response().unwrap())
+            }else {
+                Ok(internal_server_error("add_plant").unwrap())
+            }
         }
         &Method::DELETE => {
-            result = delete_list(&client, body_parsed.clone()).await;
+            let uid = event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("uid"))
+            .unwrap();
+            let list_id = event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("list_id"))
+            .unwrap();
+            if delete_list(&client, uid, list_id).await {
+                Ok(success_response().unwrap())
+            }else {
+                Ok(internal_server_error("delete_list").unwrap())
+            }
         }
         &Method::PUT => {
-            result = delete_plant(&client, body_parsed.clone()).await;
+            let uid = event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("uid"))
+            .unwrap();
+            let plant_uuid = event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("plant_uuid"))
+            .unwrap();
+            if delete_plant(&client, plant_uuid, uid).await {
+                Ok(success_response().unwrap())
+            }else {
+                Ok(internal_server_error("delete_plant").unwrap())
+            }
+
         }
-        _ => {}
-    }
+        &Method::GET => {
+            let uid = event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("uid"))
+            .unwrap();
+            // Get Lists and return they
+            let lists = hashmap_to_lists(
+                get_list(&client, uid)
+                    .await
+                    .items()
+                    .unwrap()
+                    .to_vec(),
+            );
 
-    if event.method() == &Method::GET {
-        // Get Lists and return they
-        let lists = hashmap_to_lists(get_list(&client, body_parsed)
-        .await
-        .items()
-        .unwrap()
-        .to_vec());
-
-        let resp = Response::builder()
-            .status(200)
-            .header("content-type", "text/html")
-            .body(serde_json::to_string(&lists).unwrap().into())
-            .map_err(Box::new)?;
-        Ok(resp)
-    } else {
-        // Normal request
-        // Return something that implements IntoResponse.
-        // It will be serialized to the right response event automatically by the runtime
-        let resp = Response::builder()
-            .status(if result { 200 } else { 500 })
-            .header("content-type", "text/html")
-            .body(
-                (if result {
-                    "OK"
-                } else {
-                    "ERROR, malformed body or invalid method"
-                })
-                .into(),
-            )
-            .map_err(Box::new)?;
-        Ok(resp)
+            let resp = Response::builder()
+                .status(200)
+                .header("content-type", "text/html")
+                .body(serde_json::to_string(&lists).unwrap().into())
+                .map_err(Box::new)?;
+            Ok(resp)
+        }
+        _ => {
+            let resp = Response::builder()
+                .status(501)
+                .header("content-type", "text/html")
+                .body("Not implemented".into())
+                .map_err(Box::new)?;
+            Ok(resp)
+        }
     }
 }
 

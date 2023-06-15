@@ -2,7 +2,7 @@
     "version": "2.0",
     "routeKey": "GET /hello",
     "rawPath": "/hello",
-    "rawQueryString": "user_id=test_user_id&device_id=eebfe76c-9210-4991-8651-a1d41b65437a",
+    "rawQueryString": "uid=1",
     "cookies": [],
     "headers": {
       "Host": "127.0.0.1:3000",
@@ -39,7 +39,7 @@
       "domainName": "localhost",
       "domainPrefix": "localhost"
     },
-    "body": "{ \"uid\": \"1\", \"list_id\": 1 , \"plant\": { \"uuid\": \"0d65fb3d-ee1b-4f1b-be5a-ae9cc4c56388\", \"name\": \"Basilico\" }}",
+    "body": "",
     "pathParameters": {},
     "stageVariables": null,
     "isBase64Encoded": false

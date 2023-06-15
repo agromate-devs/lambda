@@ -2,7 +2,7 @@
     "version": "2.0",
     "routeKey": "POST /hello",
     "rawPath": "/hello",
-    "rawQueryString": "user_id=test_user_id&device_id=eebfe76c-9210-4991-8651-a1d41b65437a",
+    "rawQueryString": "",
     "cookies": [],
     "headers": {
       "Host": "127.0.0.1:3000",
