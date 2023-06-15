@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: WishListAPI - AgroMate
+  description: |-
+   API di AgroMate per gestire la lista dei desideri
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.0"
+externalDocs:
+  description: Github
+  url: https://github.com/agromate-devs
+servers:
+  - url: https://v9t12m0y77.execute-api.eu-central-1.amazonaws.com
+tags:
+  - name: wishlist
+    description: Gestione lista dei desideri
+paths:
+  /wishlist:
+    put:
+      tags:
+        - wishlist
+      summary: Cancella una pianta dalla lista
+      description: Cancella una pianta dalla lista in base a UUID e list_id
+      operationId: deletePlant
+      requestBody:
+        description: Cancella una pianta dalla lista
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WishList'
+        required: true
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+      # security:
+      #   - petstore_auth:
+      #       - write:pets
+      #       - read:pets
+    post:
+      tags:
+        - wishlist
+      summary: Aggiungi una nuova pianta ad una lista
+      description: Aggiungi una nuova pianta ad una lista con uuid, plant_name e list_id
+      operationId: addPet
+      requestBody:
+        description: Aggiungi una nuova pianta ad una lista
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WishList'
+        required: true
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+      # security:
+      #   - petstore_auth:
+      #       - write:pets
+      #       - read:pets
+    delete:
+      tags:
+        - wishlist
+      summary: Deletes a pet
+      description: delete a pet
+      operationId: deletePet
+      parameters:
+        - in: path
+          name: uid
+          schema:
+            type: integer
+            example: 1
+          required: true
+        - in: path
+          name: list_id
+          schema:
+            type: integer
+            example: 1
+          required: true
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+      # security:
+      #   - petstore_auth:
+      #       - write:pets
+      #       - read:pets
+    get:
+      tags:
+        - wishlist
+      summary: Liste dell'utente
+      description: Liste dell'utente con uid specificato in richiesta
+      operationId: getWishListById
+      parameters:
+        - name: uid
+          in: path
+          description: Firebase User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+      # security:
+      #   - api_key: []
+      #   - petstore_auth:
+      #       - write:pets
+      #       - read:pets
+components:
+  schemas:
+    Plant:
+      required:
+        - uuid
+        - name
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 4bc8488c-56f2-46ab-8e64-4beaca11a005
+        name:
+          type: string
+          example: Basilico
+    WishList:
+      required:
+        - uid
+        - plant
+        - list_id
+      type: object
+      properties:
+        uid:
+          type: integer
+          format: int64
+          example: 10
+        list_id:
+          type: integer
+          format: int64
+          example: 10
+        plant:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plant'
+    ValidRequest:
+      type: string
+      example: OK
+    InvalidRequest:
+      type: string
+      example: Internal Server Error in endpoint_name
+  requestBodies:
+    WishList:
+      description: WishList object that needs to be added to the store
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WishList'
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
