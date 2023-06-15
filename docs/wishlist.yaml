@@ -23,13 +23,21 @@ paths:
       summary: Cancella una pianta dalla lista
       description: Cancella una pianta dalla lista in base a UUID e list_id
       operationId: deletePlant
-      requestBody:
-        description: Cancella una pianta dalla lista
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WishList'
-        required: true
+      parameters:
+        - in: path
+          name: uid
+          description: Firebase User ID
+          schema:
+            type: string
+            example: 7f96e6d9-74d0-417a-9f01-dc3bdfe23029
+          required: true
+        - in: path
+          name: plant_uuid
+          description: UUID pianta(generato randomicamente)
+          schema:
+            type: string
+            example: 7f96e6d9-74d0-417a-9f01-dc3bdfe23029
+          required: true
       responses:
         '200':
           description: Operazione eseguita con successo
@@ -86,12 +94,14 @@ paths:
       parameters:
         - in: path
           name: uid
+          description: Firebase User ID
           schema:
-            type: integer
-            example: 1
+            type: string
+            example: 7f96e6d9-74d0-417a-9f01-dc3bdfe23029
           required: true
         - in: path
           name: list_id
+          description: List ID(numero progressivo basato sulle liste possedute dall'utente)
           schema:
             type: integer
             example: 1
