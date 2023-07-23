@@ -11,7 +11,7 @@ externalDocs:
   description: Github
   url: https://github.com/agromate-devs
 servers:
-  - url: https://v9t12m0y77.execute-api.eu-central-1.amazonaws.com
+  - url: https://bysiftg28d.execute-api.eu-central-1.amazonaws.com
 tags:
   - name: plant
     description: Gestisci piante assegnate al sensore
