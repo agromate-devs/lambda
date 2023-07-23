@@ -24,7 +24,8 @@ jobs:
         run: |
             mkdir dist
             cd dist
-            redocly build-docs ../docs/wishlist.yaml
+            redocly build-docs ../docs/wishlist.yaml -o wishlist.html
+            redocly build-docs ../docs/plant_info.yaml -o plant_info.html
             
       - name: 📂 Deploy docs
         uses: crazy-max/ghaction-github-pages@v2

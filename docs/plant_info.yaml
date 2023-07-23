@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: PlantInfoAPI - AgroMate
+  description: |-
+   API di AgroMate per gestire le piante assegnate al sensore
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.0"
+externalDocs:
+  description: Github
+  url: https://github.com/agromate-devs
+servers:
+  - url: https://v9t12m0y77.execute-api.eu-central-1.amazonaws.com
+tags:
+  - name: plant
+    description: Gestisci piante assegnate al sensore
+paths:
+  /plant:
+    get:
+      tags:
+        - plant
+      summary: Dettagli della pianta
+      description: Prende i dettagli della pianta(livello acqua, umidità e temperature)
+      operationId: getPlantById
+      parameters:
+        - name: user_id
+          in: path
+          description: Firebase User ID
+          required: true
+          schema:
+            type: string
+        - name: sensor_id
+          in: path
+          description: ID Agrosmart
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+    post:
+      tags:
+        - plant
+      summary: Assegna una pianta all'ESP8266
+      description: Assegna una pianta all'ESP8266 con livello acqua, umidità e temperatura
+      operationId: addPlant
+      requestBody:
+        description: Assegna una pianta all'ESP8266
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlantSensor'
+        required: true
+      responses:
+        '200':
+          description: Operazione eseguita con successo
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ValidRequest'
+        '500':
+          description: Body o richiesta invalida
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/InvalidRequest'
+components:
+  schemas:
+    PlantSensor:
+      required:
+        - user_id
+        - plant_name
+        - sensor_id
+        - default_temperature
+        - temperature_limit
+        - notify_wrong_temperature
+        - default_humidity
+        - humidity_limit
+        - notify_wrong_humidity
+        - default_precipitation
+        - precipitation_limit
+        - notify_wrong_soil_humidity
+        - default_light_color
+        - light_time
+        - light_intensity
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 10
+        plant_name:
+          type: string
+          format: string
+          example: Ciao
+        sensor_id:
+          type: string
+          format: string
+          example: 123456789
+        default_temperature:
+          type: number
+          format: number
+          example: 2.2
+        temperature_limit:
+          type: number
+          format: number
+          example: 2.2
+        notify_wrong_temperature:
+          type: boolean
+          format: boolean
+          example: true
+        default_humidity:
+          type: number
+          format: number
+          example: 50.3
+        humidity_limit:
+          type: number
+          format: number
+          example: 20.0
+        notify_wrong_humidity:
+          type: boolean
+          format: boolean
+          example: true
+        default_precipitation:
+          type: number
+          format: number
+          example: 2.3
+        precipitation_limit:
+          type: number
+          format: number
+          example: 2.3
+        notify_wrong_soil_humidity:
+          type: boolean
+          format: boolean
+          example: true
+        default_light_color:
+          type: string
+          format: string
+          example: "#FFFFFF"
+        light_time:
+          type: number
+          format: number
+          example: 10.3
+        light_intensity:
+          type: number
+          format: number
+          example: 10.3
+    ValidRequest:
+      type: string
+      example: OK
+    InvalidRequest:
+      type: string
+      example: Internal Server Error in endpoint_name
+  requestBodies:
+    WishList:
+      description: WishList object that needs to be added to the store
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PlantSensor'
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
