@@ -33,12 +33,11 @@ pub async fn router(event: Request) -> Result<Response<Body>, Box<lambda_http::h
         
             let query_string =  event.query_string_parameters_ref().unwrap();
             let uid = query_string.first("user_id").expect("Cannot parse user_id");
-            let sensor_id = query_string.first("sensor_id").expect("Cannot parse sensor_id");
 
             Response::builder()
             .status(200)
             .header("content-type", "application/json")
-            .body(get_plant(client, uid, sensor_id).await.unwrap().into())
+            .body(get_plant(client, uid).await.unwrap().into())
             .map_err(Box::new)
             
         }
