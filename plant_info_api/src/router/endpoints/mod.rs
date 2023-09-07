@@ -3,12 +3,13 @@ use aws_sdk_dynamodb::{types::AttributeValue, Client};
 
 const TABLE_NAME: &str = "plants"; // DynamoDB table name
 
-pub async fn get_plant(client: Client, uid: &str) -> Result<String, String> {
+pub async fn get_plant(client: Client, uid: &str, sensor_id: &str) -> Result<String, String> {
     let results = client
         .query()
         .table_name(TABLE_NAME)
-        .key_condition_expression("user_id = :id")
-        .expression_attribute_values(":id", AttributeValue::S(uid.to_string())) 
+        .key_condition_expression("user_id = :id and sensor_id = :sid")
+        .expression_attribute_values(":id", AttributeValue::S(uid.to_string()))
+        .expression_attribute_values(":sid", AttributeValue::S(sensor_id.to_string()))
         .send()
         .await;
 
@@ -44,7 +45,7 @@ pub async fn add_plant(client: Client, request: PostRequest) -> Result<String, S
             AttributeValue::N(request.temperature_limit.to_string()),
         )
         .item(
-            "notify_wrong_temperature",
+            "notify_wrong_temperaure",
             AttributeValue::Bool(request.notify_wrong_temperature),
         )
         // End Temperature
