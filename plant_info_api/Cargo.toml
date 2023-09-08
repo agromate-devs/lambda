@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aws-config = "0.55.3"
-aws-sdk-dynamodb = "0.28.0"
+aws-config = "0.56.1"
+aws-sdk-dynamodb = "0.30.0"
 lambda_http = { version = "0.8.1", default-features = false, features = ["apigw_http"] }
 lambda_runtime = "0.8.1"
 serde = "1.0.169"
