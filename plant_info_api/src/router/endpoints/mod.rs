@@ -4,15 +4,31 @@ use aws_sdk_iotdataplane as iotdataplane;
 use aws_sdk_iotdataplane::primitives::Blob;
 const TABLE_NAME: &str = "plants"; // DynamoDB table name
 
-pub async fn get_plant(client: Client, uid: &str, sensor_id: &str) -> Result<String, String> {
-    let results = client
+async fn filter_uid(client: Client, uid: &str) -> Result<aws_sdk_dynamodb::operation::query::QueryOutput, aws_sdk_dynamodb::error::SdkError<aws_sdk_dynamodb::operation::query::QueryError>>
+{
+    client
         .query()
         .table_name(TABLE_NAME)
-        .key_condition_expression("user_id = :id and sensor_id = :sid")
+        .key_condition_expression("user_id = :id")
         .expression_attribute_values(":id", AttributeValue::S(uid.to_string()))
-        .expression_attribute_values(":sid", AttributeValue::S(sensor_id.to_string()))
         .send()
-        .await;
+        .await
+}
+
+async fn filter_uid_and_sid(client: Client, uid: &str, sensor_id: &str) -> Result<aws_sdk_dynamodb::operation::query::QueryOutput, aws_sdk_dynamodb::error::SdkError<aws_sdk_dynamodb::operation::query::QueryError>>
+{
+    client
+    .query()
+    .table_name(TABLE_NAME)
+    .key_condition_expression("user_id = :id and sensor_id = :sid")
+    .expression_attribute_values(":id", AttributeValue::S(uid.to_string()))
+    .expression_attribute_values(":sid", AttributeValue::S(sensor_id.to_string()))
+    .send()
+    .await
+}
+
+pub async fn get_plant(client: Client, uid: &str, sensor_id: &str) -> Result<String, String> {
+    let results = if sensor_id != "" {filter_uid_and_sid(client, uid, sensor_id).await} else {filter_uid(client, uid).await};
 
     match results {
         Ok(results) => {
