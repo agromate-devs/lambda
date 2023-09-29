@@ -49,14 +49,10 @@ pub async fn get_devices(req: Request, client: &Client) -> Result<Response<Body>
         .await
         .unwrap();
  
-    let response_body = ResponseBody {
-        error: false,
-        message: &query_to_string(results.items().unwrap()),
-    };
     let response = Response::builder()
         .status(200)
         .header("content-type", "text/html")
-        .body(serde_json::to_string(&response_body).unwrap().into())
+        .body(query_to_string(results.items().unwrap()).into())
         .map_err(Box::new)?;
     Ok(response)
 }
