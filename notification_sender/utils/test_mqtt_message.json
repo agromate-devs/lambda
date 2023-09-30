@@ -1,0 +1,11 @@
+{
+  "user_id": "WLk7Giku6TYBMI22wfmTSJbWOVA2",
+  "is_temperature_notification": true,
+  "is_humidity_notification": true,
+  "temperature": 24,
+  "humidity": 63,
+  "soil_humidity": 0,
+  "hour": true,
+  "media_month": false,
+  "uuid": "297a0620-3b4d-40ed-b407-2216eb0d"
+}
