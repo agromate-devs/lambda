@@ -1,6 +1,8 @@
 use lambda_http::{run, service_fn, Body, Error, Request, RequestExt, Response};
+use aws_sdk_dynamodb::types::AttributeValue;
 
 const SNS_ARN: &str = "arn:aws:sns:eu-central-1:284535252702:app/GCM/sensor_notification";
+const SNS_ARN_TABLE: &str = "notification_devices"; // Collection of all notification registred devices
 
 /// This is the main body for the function.
 /// Write your code inside it.
@@ -13,9 +15,15 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
         .and_then(|params| params.first("token"))
         .unwrap();
 
+    let user_id = event
+        .query_string_parameters_ref()
+        .and_then(|params| params.first("uid"))
+        .unwrap();
+
     let config = aws_config::load_from_env().await;
     let client = aws_sdk_sns::Client::new(&config);
-    
+    let dynamodb_client = aws_sdk_dynamodb::Client::new(&config);
+
     let result = client.create_platform_endpoint()
     .platform_application_arn(SNS_ARN)
     .token(device_token)
@@ -23,12 +31,18 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     .await;
 
     match result {
-        Ok(_) => {
+        Ok(result) => {
           let res:Response<Body>  =  Response::builder()
             .status(200)
             .header("content-type", "text/html")
             .body("OK".into())
             .map_err(Box::new)?;
+
+            dynamodb_client.put_item()
+                .table_name(SNS_ARN_TABLE)
+                .item("user_id", AttributeValue::S(user_id.to_string()))
+                .item("arn", AttributeValue::S(result.endpoint_arn.unwrap()))
+                .send().await.unwrap();
 
           Ok(res)
         },
