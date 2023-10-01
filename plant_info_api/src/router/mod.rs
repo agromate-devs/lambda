@@ -5,7 +5,7 @@ use lambda_http::http::Method;
 use lambda_http::{Request, RequestExt, Response, Body};
 use models::PostRequest;
 use aws_config::load_from_env;
-use aws_sdk_dynamodb::{types::AttributeValue, Client};
+use aws_sdk_dynamodb::Client;
 
 use self::endpoints::{get_plant, add_plant};
 
@@ -15,6 +15,7 @@ pub async fn router(event: Request) -> Result<Response<Body>, Box<lambda_http::h
             let shared_config = load_from_env().await;
             let client = Client::new(&shared_config);
             let iot_dataplane_client = aws_sdk_iotdataplane::Client::new(&shared_config);
+            let sns_client = aws_sdk_sns::Client::new(&shared_config);
 
             let body = event.body();
             let body_string = std::str::from_utf8(body).expect("invalid utf-8 sequence");
@@ -24,7 +25,7 @@ pub async fn router(event: Request) -> Result<Response<Body>, Box<lambda_http::h
             Response::builder()
             .status(200)
             .header("content-type", "application/json")
-            .body(add_plant(client, iot_dataplane_client, body_parsed).await.unwrap().into())
+            .body(add_plant(client, iot_dataplane_client, sns_client, body_parsed).await.unwrap().into())
             .map_err(Box::new)
         }
   

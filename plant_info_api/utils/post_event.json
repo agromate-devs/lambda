@@ -39,7 +39,7 @@
       "domainName": "localhost",
       "domainPrefix": "localhost"
     },
-    "body": "{\r\n    \"user_id\": \"uid\",\r\n    \"plant_name\": \"Basilico\",\r\n    \"sensor_id\": \"UUID\",\r\n    \"default_temperature\": 20,\r\n    \"temperature_limit\": 20.5,\r\n    \"notify_wrong_temperature\": false,\r\n    \"default_humidity\": 20,\r\n    \"humidity_limit\": 20.5,\r\n    \"notify_wrong_humidity\": false,\r\n    \"default_precipitation\": 20,\r\n    \"precipitation_limit\": 20.5,\r\n    \"water_soil_if_dry\": false,\r\n    \"notify_wrong_soil_humidity\": false,\r\n    \"default_light_color\": \"red\",\r\n    \"light_time\": 3,\r\n    \"light_intensity\": 2\r\n}",
+    "body":  "{\n    \"user_id\": \"uid\",\n    \"plant_name\": \"Basilico\",\n    \"sensor_id\": \"UUID\",\n    \"device_token\": \"test_token\",\n    \"default_temperature\": 20,\n    \"temperature_limit\": 20.5,\n    \"notify_wrong_temperature\": true,\n    \"default_humidity\": 20,\n    \"humidity_limit\": 20.5,\n    \"notify_wrong_humidity\": false,\n    \"default_precipitation\": 20,\n    \"precipitation_limit\": 20.5,\n    \"notify_wrong_soil_humidity\": false,\n    \"default_light_color\": \"red\",\n    \"light_time\": 3,\n    \"light_intensity\": 2\n}",
     "pathParameters": {},
     "stageVariables": null,
     "isBase64Encoded": false
