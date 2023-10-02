@@ -24,12 +24,6 @@ paths:
       description: Lista dei sensori collegati ad un utente(sensor_uuid e user_uid)
       operationId: getSensorsByUserUid
       parameters:
-        - name: user_id
-          in: path
-          description: Firebase User ID
-          required: true
-          schema:
-            type: string
         - in: header
           name: Authorization
           schema:
@@ -86,12 +80,6 @@ paths:
       description: Rimuovi un nuovo sensore all'account
       operationId: removeSensor
       parameters:
-        - name: user_id
-          in: path
-          description: Firebase User ID
-          required: true
-          schema:
-            type: string
         - name: device_id
           in: path
           description: Sensor UUID
@@ -132,10 +120,6 @@ components:
           items: 
             $ref: '#/components/schemas/Sensor'
           properties:
-            user_id:
-              type: integer
-              format: string
-              example: asdffsdfsdf
             device_id:
               type: string
               format: string
@@ -160,17 +144,12 @@ components:
           example: Device deleted successfully
     Sensors:
       required:
-        - user_id
         - device_id
       type: array
       items: 
         $ref: '#/components/schemas/Sensor'
     Sensor:
       properties:
-        user_id:
-          type: integer
-          format: string
-          example: asdffsdfsdf
         device_id:
           type: string
           format: string
