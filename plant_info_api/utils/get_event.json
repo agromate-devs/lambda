@@ -2,7 +2,7 @@
     "version": "2.0",
     "routeKey": "GET /hello",
     "rawPath": "/hello",
-    "rawQueryString": "user_id=1&sensor_id=2",
+    "rawQueryString": "user_id=WLk7Giku6TYBMI22wfmTSJbWOVA2&sensor_id=NULL",
     "cookies": [],
     "headers": {
       "Host": "127.0.0.1:3000",
@@ -18,7 +18,8 @@
       "Sec-Fetch-User": "?1",
       "Cache-Control": "max-age=0",
       "X-Forwarded-Proto": "http",
-      "X-Forwarded-Port": "3000"
+      "X-Forwarded-Port": "3000",
+      "authorization": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImFkNWM1ZTlmNTdjOWI2NDYzYzg1ODQ1YTA4OTlhOWQ0MTI5MmM4YzMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiYW5kcmVvY2siLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdHJhdmVsbWF0ZXMtMzgyOTIyIiwiYXVkIjoidHJhdmVsbWF0ZXMtMzgyOTIyIiwiYXV0aF90aW1lIjoxNjk2MjQzMjE3LCJ1c2VyX2lkIjoiV0xrN0dpa3U2VFlCTUkyMndmbVRTSmJXT1ZBMiIsInN1YiI6IldMazdHaWt1NlRZQk1JMjJ3Zm1UU0piV09WQTIiLCJpYXQiOjE2OTYyNDMyMTcsImV4cCI6MTY5NjI0NjgxNywiZW1haWwiOiJhbmRyZWNhbmFsZTA1QGxpYmVyby5pdCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJhbmRyZWNhbmFsZTA1QGxpYmVyby5pdCJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Fwq__YJVNDWLl-qDak_uIGN36311G6nJkpYWL1IbyP1d8Xag2usCKvxfiGGAcCOBBrtm6oaE8jInQAue9fNlkflTu4WJ9wsbdw6cBNRy1Gu1fm3nqyXp5pQ2C99tnpqGJzi1U2UOaHllm0I3nrJxxGVMWb8HpV5tMhwxa4rcf2w8L3l4GWXxYyu9ZP3JuAVpi4dCjKL0u6GKWFo2V7TGazQY2tLaujZVxNAUBdodoDTQ14FJRoZz63dncsCvtKC4PD_GqRDJ4jemLs0vqTKFii94LrZag5FL2pLy2iqjPecOAuksR-mUFGezpUb3nxKfiP-nc0ZK51rvyHfJSKNoyQ"
     },
     "queryStringParameters": {},
     "requestContext": {

@@ -3,6 +3,7 @@ use aws_sdk_dynamodb::{operation::scan::ScanOutput, types::AttributeValue, Clien
 use lambda_http::{http::Method, run, service_fn, Body, Error, Request, RequestExt , Response};
 use response::{success_response, internal_server_error};
 mod response;
+use helper::get_user_id;
 
 const TABLE_NAME: &str = "wishlist"; // DynamoDB table name
 
@@ -14,7 +15,9 @@ struct Plant {
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 struct WishListRequest {
+    #[serde(skip)]  // uid is from JWT, not from body
     uid: String,  // Firebase User ID
+
     plant: Plant, // Plant name
     list_id: i8,  // Unique identifier of selected wishlist
 }
@@ -132,8 +135,10 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
             let body = event.body();
             let body_string = std::str::from_utf8(body).expect("invalid utf-8 sequence");
         
-            let body_parsed = serde_json::from_str::<WishListRequest>(body_string).unwrap();
-        
+            let mut body_parsed = serde_json::from_str::<WishListRequest>(body_string).unwrap();
+            
+            body_parsed.uid = get_user_id(&event);  // Fill with uid from JWT
+
             if add_plant(&client, body_parsed.clone()).await {
                 Ok(success_response().unwrap())
             }else {
@@ -141,30 +146,22 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
             }
         }
         &Method::DELETE => {
-            let uid = event
-            .query_string_parameters_ref()
-            .and_then(|params| params.first("uid"))
-            .unwrap();
             let list_id = event
             .query_string_parameters_ref()
             .and_then(|params| params.first("list_id"))
             .unwrap();
-            if delete_list(&client, uid, list_id).await {
+            if delete_list(&client, &get_user_id(&event), list_id).await {
                 Ok(success_response().unwrap())
             }else {
                 Ok(internal_server_error("delete_list").unwrap())
             }
         }
         &Method::PUT => {
-            let uid = event
-            .query_string_parameters_ref()
-            .and_then(|params| params.first("uid"))
-            .unwrap();
             let plant_uuid = event
             .query_string_parameters_ref()
             .and_then(|params| params.first("plant_uuid"))
             .unwrap();
-            if delete_plant(&client, plant_uuid, uid).await {
+            if delete_plant(&client, plant_uuid, &get_user_id(&event)).await {
                 Ok(success_response().unwrap())
             }else {
                 Ok(internal_server_error("delete_plant").unwrap())
@@ -172,13 +169,9 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
 
         }
         &Method::GET => {
-            let uid = event
-            .query_string_parameters_ref()
-            .and_then(|params| params.first("uid"))
-            .unwrap();
             // Get Lists and return they
             let lists = hashmap_to_lists(
-                get_list(&client, uid)
+                get_list(&client, &get_user_id(&event))
                     .await
                     .items()
                     .unwrap()

@@ -2,6 +2,7 @@ use super::models::PostRequest;
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
 use aws_sdk_iotdataplane as iotdataplane;
 use aws_sdk_iotdataplane::primitives::Blob;
+use helper::get_user_id;
 
 const TABLE_NAME: &str = "plants"; // DynamoDB table name
 const SNS_ARN: &str = "arn:aws:sns:eu-central-1:284535252702:app/GCM/sensor_notification";
@@ -31,7 +32,7 @@ async fn filter_uid_and_sid(client: Client, uid: &str, sensor_id: &str) -> Resul
 }
 
 pub async fn get_plant(client: Client, uid: &str, sensor_id: &str) -> Result<String, String> {
-    let results = if sensor_id != "" {filter_uid_and_sid(client, uid, sensor_id).await} else {filter_uid(client, uid).await};
+    let results = if sensor_id != "NULL" {filter_uid_and_sid(client, uid, sensor_id).await} else {filter_uid(client, uid).await};
 
     match results {
         Ok(results) => {

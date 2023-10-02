@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
 use lambda_http::{Body, Error, Request, RequestExt, Response};
 use serde::{Deserialize, Serialize};
+use helper::get_user_id;
 
 const DEVICE_TABLE_NAME: &str = "devices";
 
@@ -34,10 +35,7 @@ fn query_to_string(items: &[HashMap<String, AttributeValue>]) -> String {
 }
 
 pub async fn get_devices(req: Request, client: &Client) -> Result<Response<Body>, Error> {
-    let user_id = req
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("user_id"))
-        .unwrap();
+    let user_id = get_user_id(&req);
 
     let results = client
         .query()
@@ -58,10 +56,7 @@ pub async fn get_devices(req: Request, client: &Client) -> Result<Response<Body>
 }
 
 pub async fn add_devices(req: Request, client: &Client) -> Result<Response<Body>, Error> {
-    let user_id = req
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("user_id"))
-        .unwrap();
+    let user_id = get_user_id(&req);
 
     let board_uuid = req
         .query_string_parameters_ref()
@@ -99,10 +94,7 @@ pub async fn add_devices(req: Request, client: &Client) -> Result<Response<Body>
 }
 
 pub async fn delete_devices(req: Request, client: &Client) -> Result<Response<Body>, Error> {
-    let user_id = req
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("user_id"))
-        .unwrap();
+    let user_id = get_user_id(&req);
 
     let board_uuid = req
         .query_string_parameters_ref()

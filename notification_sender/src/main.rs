@@ -2,7 +2,6 @@ use aws_config::load_from_env;
 use aws_sdk_dynamodb::types::AttributeValue;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use serde::{Serialize, Deserialize};
-use tracing_subscriber::fmt::format;
 use std::collections::HashMap;
 
 const SNS_DEVICES_TABLE: &str = "notification_devices";
@@ -121,7 +120,6 @@ impl Into<NotificationDevice> for &HashMap<String, AttributeValue> {
 }
 
 async fn function_handler(event: LambdaEvent<Request>) -> Result<(), Error> {
-    println!("OK");
     let shared_config = load_from_env().await;
     let client = aws_sdk_sns::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);

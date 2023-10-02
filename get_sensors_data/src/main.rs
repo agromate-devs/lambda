@@ -1,6 +1,7 @@
 use aws_sdk_dynamodb::{operation::query::QueryOutput, types::AttributeValue, Client};
 use lambda_http::{run, service_fn, Body, Error, Request, RequestExt, Response};
 use std::collections::HashMap;
+use helper::get_user_id;
 
 const TABLE_NAME: &str = "sensor_measuration";
 
@@ -69,12 +70,9 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
 
-    let uuid = event    // Get UUID of user from query string
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("uuid"))
-        .unwrap();
+    let user_id = get_user_id(&event);
 
-    let measuration = hashmap_to_lists(get_list(&client, uuid).await.items().unwrap().to_vec());
+    let measuration = hashmap_to_lists(get_list(&client, &user_id).await.items().unwrap().to_vec());
 
     let resp = Response::builder()
         .status(200)
