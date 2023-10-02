@@ -81,7 +81,7 @@ pub async fn add_plant(dynamodb_client: Client, iot_data_client: aws_sdk_iotdata
             AttributeValue::N(request.temperature_limit.to_string()),
         )
         .item(
-            "notify_wrong_temperaure",
+            "notify_wrong_temperature",
             AttributeValue::Bool(request.notify_wrong_temperature),
         )
         // End Temperature
