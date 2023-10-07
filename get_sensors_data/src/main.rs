@@ -70,9 +70,12 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
 
-    let user_id = get_user_id(&event);
+    let uuid = event    // Get Sensor ID of user from query string
+        .query_string_parameters_ref()
+        .and_then(|params| params.first("uuid"))
+        .unwrap();
 
-    let measuration = hashmap_to_lists(get_list(&client, &user_id).await.items().unwrap().to_vec());
+    let measuration = hashmap_to_lists(get_list(&client, &uuid).await.items().unwrap().to_vec());
 
     let resp = Response::builder()
         .status(200)
