@@ -17,7 +17,7 @@ tags:
     description: Gestione lista dei desideri
 paths:
   /wishlist:
-    put:
+    delete:
       tags:
         - wishlist
       summary: Cancella una pianta dalla lista
@@ -85,40 +85,6 @@ paths:
       #   - petstore_auth:
       #       - write:pets
       #       - read:pets
-    delete:
-      tags:
-        - wishlist
-      summary: Deletes a pet
-      description: delete a pet
-      operationId: deletePet
-      parameters:
-        - in: path
-          name: uid
-          description: Firebase User ID
-          schema:
-            type: string
-            example: 7f96e6d9-74d0-417a-9f01-dc3bdfe23029
-          required: true
-        - in: path
-          name: list_id
-          description: List ID(numero progressivo basato sulle liste possedute dall'utente)
-          schema:
-            type: integer
-            example: 1
-          required: true
-      responses:
-        '200':
-          description: Operazione eseguita con successo
-          content:
-            text/html:
-              schema:
-                $ref: '#/components/schemas/ValidRequest'
-        '500':
-          description: Body o richiesta invalida
-          content:
-            text/html:
-              schema:
-                $ref: '#/components/schemas/InvalidRequest'
       # security:
       #   - petstore_auth:
       #       - write:pets

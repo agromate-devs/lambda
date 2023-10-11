@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use aws_sdk_dynamodb::{operation::scan::ScanOutput, types::AttributeValue, Client};
+use aws_sdk_dynamodb::{operation::{query::QueryOutput}, types::AttributeValue, Client};
 use lambda_http::{http::Method, run, service_fn, Body, Error, Request, RequestExt , Response};
 use response::{success_response, internal_server_error};
 mod response;
@@ -19,19 +19,17 @@ struct WishListRequest {
     uid: String,  // Firebase User ID
 
     plant: Plant, // Plant name
-    list_id: i8,  // Unique identifier of selected wishlist
 }
 
 #[derive(Clone, serde::Serialize)]
 struct List {
-    list_id: i8, // Unique identifier of list
     plants: Vec<Plant>,
     uuid: String,
 }
 
-async fn get_list(client: &Client, uid: &str) -> ScanOutput {
+async fn get_list(client: &Client, uid: &str) -> QueryOutput {
     let plants_in_list_raw = client
-        .scan()
+        .query()
         .table_name(TABLE_NAME)
         .filter_expression("#uid = :id")
         .expression_attribute_names("#uid", "user_id")
@@ -46,7 +44,6 @@ async fn get_list(client: &Client, uid: &str) -> ScanOutput {
 async fn add_plant(client: &Client, details: WishListRequest) -> bool {
     let uid = AttributeValue::S(details.uid);
     let plant_name = AttributeValue::S(details.plant.name);
-    let list_id = AttributeValue::N(details.list_id.to_string());
     let uuid = AttributeValue::S(details.plant.uuid);
 
     let request = client
@@ -54,7 +51,6 @@ async fn add_plant(client: &Client, details: WishListRequest) -> bool {
         .table_name(TABLE_NAME)
         .item("user_id", uid)
         .item("plant_name", plant_name)
-        .item("list_id", list_id)
         .item("uuid", uuid);
 
     let response = request.send().await;
@@ -66,31 +62,6 @@ async fn add_plant(client: &Client, details: WishListRequest) -> bool {
             false
         }
     }
-}
-
-async fn delete_list(client: &Client, uid: &str, list_id: &str) -> bool {
-    // TODO: Rewrite with bulk delete
-    let lists = get_list(&client, uid).await;
-    let selected_list: Vec<HashMap<String, AttributeValue>> = lists
-        .items()
-        .unwrap()
-        .to_vec()
-        .into_iter()
-        .filter(|x| {
-            x.get("list_id").unwrap().to_owned() == AttributeValue::N(list_id.to_string())
-        })
-        .collect();
-    for plant in selected_list {
-        client
-            .delete_item()
-            .table_name(TABLE_NAME)
-            .key("uuid", plant.get("uuid").unwrap().clone())
-            .key("user_id", AttributeValue::S(uid.to_string()))
-            .send()
-            .await
-            .unwrap();
-    }
-    true
 }
 
 async fn delete_plant(client: &Client, plant_uuid: &str, uid: &str) -> bool {
@@ -146,17 +117,6 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
             }
         }
         &Method::DELETE => {
-            let list_id = event
-            .query_string_parameters_ref()
-            .and_then(|params| params.first("list_id"))
-            .unwrap();
-            if delete_list(&client, &get_user_id(&event), list_id).await {
-                Ok(success_response().unwrap())
-            }else {
-                Ok(internal_server_error("delete_list").unwrap())
-            }
-        }
-        &Method::PUT => {
             let plant_uuid = event
             .query_string_parameters_ref()
             .and_then(|params| params.first("plant_uuid"))
