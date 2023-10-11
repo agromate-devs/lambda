@@ -31,7 +31,7 @@ async fn get_list(client: &Client, uid: &str) -> QueryOutput {
     let plants_in_list_raw = client
         .query()
         .table_name(TABLE_NAME)
-        .filter_expression("#uid = :id")
+        .key_condition_expression("#uid = :id")
         .expression_attribute_names("#uid", "user_id")
         .expression_attribute_values(":id", AttributeValue::S(uid.to_string()))
         .send()
